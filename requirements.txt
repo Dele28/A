@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 Flask
 yfinance
 pandas
 gunicorn
+=======
+Flask
+yfinance
+pandas
+gunicorn
+>>>>>>> 1bed2b1 (Initial commit)
