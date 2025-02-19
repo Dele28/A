@@ -1,3 +1,0 @@
-git add .
-git commit -m "Updated Flask app for Render deployment"
-git push origin main
