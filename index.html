@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker</title>
+</head>
+<body>
+    <h1>Stock Prices</h1>
+    <table border="1">
+        <tr>
+            <th>Ticker</th>
+            <th>Current Price</th>
+            <th>Change (%)</th>
+        </tr>
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.current_price }}</td>
+            <td {% if stock.change_percent < 0 %}style="color:red;"{% else %}style="color:green;"{% endif %}>
+                {{ stock.change_percent }}%
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
