@@ -4,64 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Tracker</title>
-    <script>
-        async function addStock() {
-            const symbol = prompt("Enter stock symbol:");
-            if (!symbol) return;
-            const response = await fetch('/add_stock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ symbol })
-            });
-            const result = await response.json();
-            alert(result.message);
-            if (response.ok) location.reload();
-        }
-
-        async function removeStock() {
-            const symbol = prompt("Enter stock symbol to remove:");
-            if (!symbol) return;
-            const response = await fetch('/remove_stock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ symbol })
-            });
-            const result = await response.json();
-            alert(result.message);
-            if (response.ok) location.reload();
-        }
-
-        function refreshPage() {
-            location.reload();
-        }
-
-        setInterval(refreshPage, 60000);  // Refresh every 60 seconds
-    </script>
 </head>
 <body>
-    <h1>Stock Tracker</h1>
-    <button onclick="addStock()">Add Stock</button>
-    <button onclick="removeStock()">Remove Stock</button>
-
+    <h1>Stock Prices</h1>
     <table border="1">
-        <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Price</th>
-                <th>Signal</th>
-                <th>Performance</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for stock in stocks %}
-            <tr style="background-color: {% if stock.signal == 'buy' %}lightgreen{% elif stock.signal == 'sell' %}lightcoral{% else %}white{% endif %}">
-                <td>{{ stock.symbol }}</td>
-                <td>${{ stock.price }}</td>
-                <td>{{ stock.signal }}</td>
-                <td>{{ stock.performance }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tr>
+            <th>Ticker</th>
+            <th>Current Price</th>
+            <th>Change (%)</th>
+        </tr>
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.current_price }}</td>
+            <td {% if stock.change_percent < 0 %}style="color:red;"{% else %}style="color:green;"{% endif %}>
+                {{ stock.change_percent }}%
+            </td>
+        </tr>
+        {% endfor %}
     </table>
 </body>
 </html>
