@@ -1,0 +1,3 @@
+git add templates/index.html
+git commit -m "Added index.html inside templates folder"
+git push origin main
