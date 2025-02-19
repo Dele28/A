@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .buy {
+            background-color: lightgreen;
+        }
+        .sell {
+            background-color: lightcoral;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock Prices</h1>
+    <form method="POST" action="/add_stock">
+        <label for="symbol">Add Stock Symbol:</label>
+        <input type="text" id="symbol" name="symbol" required>
+        <button type="submit">Add</button>
+    </form>
+    <br>
+    <table>
+        <tr>
+            <th>Ticker</th>
+            <th>Current Price</th>
+            <th>Change (%)</th>
+            <th>Signal</th>
+            <th>Post-Signal Change</th>
+        </tr>
+        {% for stock in stocks|sort(attribute='signal_time', reverse=True) %}
+        <tr class="{% if stock.signal == 'BUY' %}buy{% elif stock.signal == 'SELL' %}sell{% endif %}">
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.current_price }}</td>
+            <td {% if stock.change_percent < 0 %}style="color:red;"{% else %}style="color:green;"{% endif %}>
+                {{ stock.change_percent }}%
+            </td>
+            <td>{{ stock.signal }}</td>
+            <td>{{ stock.post_signal_change }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
