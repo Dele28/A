@@ -1,31 +1,63 @@
-import sqlite3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Tracker</title>
+    <script>
+        async function addStock() {
+            let ticker = document.getElementById("tickerInput").value;
+            if (!ticker) {
+                alert("Please enter a stock ticker.");
+                return;
+            }
+            let response = await fetch("/add_stock", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ticker: ticker})
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert("Failed to add stock.");
+            }
+        }
 
-# Connect to SQLite database (or create it if it doesn't exist)
-conn = sqlite3.connect("stocks.db")
-cursor = conn.cursor()
-
-# Create table for stock data
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS stocks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticker TEXT UNIQUE NOT NULL,
-    current_price REAL,
-    change_percent REAL,
-    signal TEXT,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-''')
-
-# Create table for tracking stocks dynamically
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS tracked_stocks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticker TEXT UNIQUE NOT NULL
-);
-''')
-
-# Commit and close connection
-conn.commit()
-conn.close()
-
-print("Database schema created successfully.")
+        async function removeStock(ticker) {
+            let response = await fetch("/remove_stock", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ticker: ticker})
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert("Failed to remove stock.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Stock Tracker</h1>
+    <input type="text" id="tickerInput" placeholder="Enter ticker">
+    <button onclick="addStock()">Add Stock</button>
+    <table border="1">
+        <tr>
+            <th>Ticker</th>
+            <th>Price</th>
+            <th>Change %</th>
+            <th>Signal</th>
+            <th>Action</th>
+        </tr>
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.ticker }}</td>
+            <td>{{ stock.current_price if stock.current_price else 'N/A' }}</td>
+            <td>{{ stock.change_percent if stock.change_percent else 'N/A' }}%</td>
+            <td>{{ stock.signal }}</td>
+            <td><button onclick="removeStock('{{ stock.ticker }}')">Remove</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
