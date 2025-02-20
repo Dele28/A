@@ -1,7 +1,6 @@
 Flask
 yfinance
 gunicorn
-sqlite3
 requests
 pandas
 numpy
