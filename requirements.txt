@@ -1,3 +1,8 @@
 Flask
+Flask-SQLAlchemy
 yfinance
+requests
+pandas
+numpy
+matplotlib
 gunicorn
