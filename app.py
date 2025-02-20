@@ -62,6 +62,7 @@ def update_stock_data():
 @app.route('/')
 def index():
     print("Serving index.html")  # Debugging log
+    update_stock_data()  # Ensure the latest data is shown
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute("SELECT ticker, current_price, change_percent, signal FROM stocks ORDER BY timestamp DESC")
@@ -70,15 +71,22 @@ def index():
 
 @app.route('/add_stock', methods=['POST'])
 def add_stock():
-    ticker = request.json.get("ticker", "").upper()
+    ticker = request.form.get("ticker", "").upper() or request.json.get("ticker", "").upper()
+    
     if not ticker:
         return jsonify({"error": "No ticker provided"}), 400
-    
+
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
-        c.execute("INSERT OR IGNORE INTO tracked_stocks (ticker) VALUES (?)", (ticker,))
-        conn.commit()
-    return jsonify({"message": "Stock added"})
+        try:
+            c.execute("INSERT OR IGNORE INTO tracked_stocks (ticker) VALUES (?)", (ticker,))
+            if c.rowcount == 0:
+                return jsonify({"error": "Stock already exists or invalid ticker"}), 400
+            conn.commit()
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"message": "Stock added successfully"})
 
 @app.route('/remove_stock', methods=['POST'])
 def remove_stock():
