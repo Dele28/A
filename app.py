@@ -1,7 +1,7 @@
 import os
 import sqlite3
-import yfinance as yf
 import time
+import yfinance as yf
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
@@ -13,14 +13,15 @@ def init_db():
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS stocks (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        ticker TEXT UNIQUE,
+                        ticker TEXT UNIQUE NOT NULL,
                         current_price REAL,
                         change_percent REAL,
                         signal TEXT,
                         timestamp INTEGER
                     )''')
         c.execute('''CREATE TABLE IF NOT EXISTS tracked_stocks (
-                        ticker TEXT UNIQUE
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ticker TEXT UNIQUE NOT NULL
                     )''')
         conn.commit()
 
@@ -29,19 +30,16 @@ def get_stock_data(ticker):
     try:
         stock = yf.Ticker(ticker)
         hist = stock.history(period="1mo")
-        
-        if hist.empty:  # Prevent errors if no data is found
-            return (ticker, None, None, "ERROR", int(time.time()))
+        if len(hist) < 2:
+            return (ticker, None, None, "NO DATA", int(time.time()))
         
         current_price = hist["Close"].iloc[-1]
         prev_price = hist["Close"].iloc[-2]
         change_percent = ((current_price - prev_price) / prev_price) * 100
+        
         signal = "BUY" if change_percent > 2 else "SELL" if change_percent < -2 else "HOLD"
-
         return (ticker, round(current_price, 2), round(change_percent, 2), signal, int(time.time()))
-    
-    except Exception as e:
-        print(f"Error fetching data for {ticker}: {e}")
+    except:
         return (ticker, None, None, "ERROR", int(time.time()))
 
 # Update stock data in the database
@@ -50,12 +48,11 @@ def update_stock_data():
         c = conn.cursor()
         c.execute("SELECT ticker FROM tracked_stocks")
         tracked_stocks = [row[0] for row in c.fetchall()]
-
+        
         for ticker in tracked_stocks:
             data = get_stock_data(ticker)
             c.execute('''INSERT INTO stocks (ticker, current_price, change_percent, signal, timestamp)
-                         VALUES (?, ?, ?, ?, ?) 
-                         ON CONFLICT(ticker) DO UPDATE SET
+                         VALUES (?, ?, ?, ?, ?) ON CONFLICT(ticker) DO UPDATE SET
                          current_price=excluded.current_price,
                          change_percent=excluded.change_percent,
                          signal=excluded.signal,
@@ -64,6 +61,7 @@ def update_stock_data():
 
 @app.route('/')
 def index():
+    print("Serving index.html")  # Debugging log
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute("SELECT ticker, current_price, change_percent, signal FROM stocks ORDER BY timestamp DESC")
@@ -80,22 +78,17 @@ def add_stock():
         c = conn.cursor()
         c.execute("INSERT OR IGNORE INTO tracked_stocks (ticker) VALUES (?)", (ticker,))
         conn.commit()
-    
-    return jsonify({"message": f"Stock {ticker} added successfully"})
+    return jsonify({"message": "Stock added"})
 
 @app.route('/remove_stock', methods=['POST'])
 def remove_stock():
     ticker = request.json.get("ticker", "").upper()
-    if not ticker:
-        return jsonify({"error": "No ticker provided"}), 400
-
     with sqlite3.connect(DB_FILE) as conn:
         c = conn.cursor()
         c.execute("DELETE FROM tracked_stocks WHERE ticker = ?", (ticker,))
         c.execute("DELETE FROM stocks WHERE ticker = ?", (ticker,))
         conn.commit()
-
-    return jsonify({"message": f"Stock {ticker} removed successfully"})
+    return jsonify({"message": "Stock removed"})
 
 if __name__ == '__main__':
     init_db()
