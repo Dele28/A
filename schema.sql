@@ -1,13 +1,10 @@
-CREATE TABLE IF NOT EXISTS stocks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticker TEXT UNIQUE NOT NULL
-);
+DROP TABLE IF EXISTS stocks;
 
-CREATE TABLE IF NOT EXISTS signals (
+CREATE TABLE stocks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    ticker TEXT NOT NULL,
-    signal TEXT CHECK(signal IN ('BUY', 'SELL')) NOT NULL,
-    price REAL NOT NULL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ticker) REFERENCES stocks (ticker)
+    ticker TEXT UNIQUE NOT NULL,
+    current_price REAL NOT NULL,
+    change_percent REAL NOT NULL,
+    signal TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
