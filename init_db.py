@@ -4,6 +4,7 @@ def init_db():
     conn = sqlite3.connect("stocks.db")
     c = conn.cursor()
 
+    # Apply schema
     with open("schema.sql", "r") as f:
         c.executescript(f.read())
 
