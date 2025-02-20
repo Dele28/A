@@ -1,12 +1,15 @@
 import sqlite3
 
-DB_FILE = "stocks.db"
-
 def init_db():
-    with sqlite3.connect(DB_FILE) as conn:
-        with open("schema.sql", "r") as f:
-            conn.executescript(f.read())
-        print("Database initialized successfully!")
+    conn = sqlite3.connect("stocks.db")
+    c = conn.cursor()
+
+    with open("schema.sql", "r") as f:
+        c.executescript(f.read())
+
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
     init_db()
+    print("Database initialized successfully.")
