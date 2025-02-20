@@ -1,42 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Tracker</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: center;
-        }
-        .buy-signal {
-            background-color: lightgreen;
-        }
-        .sell-signal {
-            background-color: lightcoral;
-        }
-    </style>
-</head>
-<body>
-    <h1>Stock Prices</h1>
-    <table>
-        <tr>
-            <th>Ticker</th>
-            <th>Current Price</th>
-            <th>Change (%)</th>
-        </tr>
-        {% for stock in stocks %}
-        <tr class="{% if stock.signal == 'buy' %}buy-signal{% elif stock.signal == 'sell' %}sell-signal{% endif %}">
-            <td>{{ stock.ticker }}</td>
-            <td>{{ stock.current_price }}</td>
-            <td>{{ stock.change_percent }}%</td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
-</html>
+import sqlite3
+
+# Connect to SQLite database (or create it if it doesn't exist)
+conn = sqlite3.connect("stocks.db")
+cursor = conn.cursor()
+
+# Create table for stock data
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS stocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker TEXT UNIQUE NOT NULL,
+    current_price REAL,
+    change_percent REAL,
+    signal TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+''')
+
+# Create table for tracking stocks dynamically
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS tracked_stocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticker TEXT UNIQUE NOT NULL
+);
+''')
+
+# Commit and close connection
+conn.commit()
+conn.close()
+
+print("Database schema created successfully.")
