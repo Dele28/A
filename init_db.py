@@ -1,16 +1,20 @@
 import sqlite3
 
-def init_db():
+def initialize_database():
     conn = sqlite3.connect("stocks.db")
     c = conn.cursor()
-
-    # Apply schema
-    with open("schema.sql", "r") as f:
-        c.executescript(f.read())
-
+    
+    # Create the tracked_stocks table if it does not exist
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS tracked_stocks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticker TEXT UNIQUE NOT NULL
+    )
+    """)
+    
     conn.commit()
     conn.close()
+    print("Database initialized successfully.")
 
 if __name__ == "__main__":
-    init_db()
-    print("Database initialized successfully.")
+    initialize_database()
