@@ -6,58 +6,58 @@
     <title>Stock Tracker</title>
     <script>
         async function addStock() {
-            let ticker = document.getElementById("tickerInput").value;
+            const ticker = document.getElementById("stockInput").value.trim().toUpperCase();
             if (!ticker) {
                 alert("Please enter a stock ticker.");
                 return;
             }
-            let response = await fetch("/add_stock", {
+
+            const response = await fetch("/add_stock", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ticker: ticker})
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ ticker: ticker })
             });
+
+            const result = await response.json();
             if (response.ok) {
-                location.reload();
+                alert(result.message);
+                location.reload();  // Refresh to show updated stocks
             } else {
-                alert("Failed to add stock.");
+                alert(result.error);
             }
         }
 
         async function removeStock(ticker) {
-            let response = await fetch("/remove_stock", {
+            const response = await fetch("/remove_stock", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ticker: ticker})
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ ticker: ticker })
             });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert("Failed to remove stock.");
-            }
+
+            const result = await response.json();
+            alert(result.message);
+            location.reload();  // Refresh the page to update the stock list
         }
     </script>
 </head>
 <body>
     <h1>Stock Tracker</h1>
-    <input type="text" id="tickerInput" placeholder="Enter ticker">
+    <input type="text" id="stockInput" placeholder="Enter Ticker">
     <button onclick="addStock()">Add Stock</button>
-    <table border="1">
-        <tr>
-            <th>Ticker</th>
-            <th>Price</th>
-            <th>Change %</th>
-            <th>Signal</th>
-            <th>Action</th>
-        </tr>
+
+    <h2>Tracked Stocks</h2>
+    <ul>
         {% for stock in stocks %}
-        <tr>
-            <td>{{ stock.ticker }}</td>
-            <td>{{ stock.current_price if stock.current_price else 'N/A' }}</td>
-            <td>{{ stock.change_percent if stock.change_percent else 'N/A' }}%</td>
-            <td>{{ stock.signal }}</td>
-            <td><button onclick="removeStock('{{ stock.ticker }}')">Remove</button></td>
-        </tr>
+            <li>
+                {{ stock.ticker }} - ${{ stock.current_price }} ({{ stock.change_percent }}%)
+                <strong>{{ stock.signal }}</strong>
+                <button onclick="removeStock('{{ stock.ticker }}')">Remove</button>
+            </li>
         {% endfor %}
-    </table>
+    </ul>
 </body>
 </html>
